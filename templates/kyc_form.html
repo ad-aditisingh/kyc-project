@@ -447,7 +447,7 @@ body {
                    <div class="invalid-feedback">Please select district.</div>
                </div>
                <div class="col-md-4">
-                   <label class="form-label">City <span class="required-star">*</span></label>
+                   <label class="form-label">City <span class="required-star">*</span> <small class="text-muted" style="font-weight:400;">(select or type below if not listed)</small></label>
                    <select class="form-select" name="city_id" id="city_id" required>
                        <option value="">-- Select City --</option>
                    </select>
@@ -675,13 +675,25 @@ body {
                 }
             });
 
-            // Check city selected
-            const citySelect = document.getElementById('city_id');
-            if (!citySelect.value) {
-                citySelect.classList.add('is-invalid');
-                valid = false;
+           // Check city — either dropdown or manual
+           const citySelect = document.getElementById('city_id');
+           const manualBox = document.getElementById('city_manual_box');
+           const manualInput = document.querySelector('[name="city_manual"]');
+
+           if (manualBox.style.display === 'block') {
+               if (!manualInput.value.trim()) {
+                    manualInput.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    manualInput.classList.remove('is-invalid');
+                }
             } else {
-                citySelect.classList.remove('is-invalid');
+                if (!citySelect.value) {
+                    citySelect.classList.add('is-invalid');
+                    valid = false;
+                } else {
+                    citySelect.classList.remove('is-invalid');
+                }
             }
 
             if (!form.checkValidity() || !valid) {
@@ -722,6 +734,9 @@ body {
     // Load cities when district changes
     function loadCities(districtId) {
         const citySelect = document.getElementById('city_id');
+        const manualBox = document.getElementById('city_manual_box');
+        const manualInput = document.querySelector('[name="city_manual"]');
+
         citySelect.innerHTML = '<option value="">-- Select City --</option>';
         if (!districtId) return;
 
@@ -729,18 +744,23 @@ body {
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.length === 0) {
-                    citySelect.innerHTML += '<option disabled>No cities found — type below</option>';
-                    // Show manual input if no cities in database
-                    document.getElementById('city_manual_box').style.display = 'block';
-                    return;
+                    // No cities — show manual input, remove required from dropdown
+                    citySelect.innerHTML += '<option disabled>No cities available</option>';
+                    citySelect.removeAttribute('required');
+                    manualBox.style.display = 'block';
+                    manualInput.setAttribute('required', 'required');
+                } else {
+                    // Cities found — hide manual, restore required on dropdown
+                    manualBox.style.display = 'none';
+                    manualInput.removeAttribute('required');
+                    citySelect.setAttribute('required', 'required');
+                    data.forEach(function(c) {
+                        var option = document.createElement('option');
+                        option.value = c.id;
+                        option.textContent = c.name;
+                        citySelect.appendChild(option);
+                    });
                 }
-                document.getElementById('city_manual_box').style.display = 'none';
-                data.forEach(function(c) {
-                    var option = document.createElement('option');
-                    option.value = c.id;
-                    option.textContent = c.name;
-                    citySelect.appendChild(option);
-                });
             })
             .catch(function(err) {
                 console.error('Error loading cities:', err);
@@ -752,11 +772,11 @@ body {
         const label = document.getElementById(labelId);
         if (input.files[0]) {
             if (input.files[0].size > MAX_FILE_SIZE) {
-                label.textContent = '❌ File too large (max 2MB)';
+                label.textContent = ' File too large (max 2MB)';
                 label.style.color = 'red';
                 input.value = '';
             } else {
-                label.textContent = '✅ ' + input.files[0].name;
+                label.textContent = 'Uploaded: ' + input.files[0].name;
                 label.style.color = 'green';
             }
         }
