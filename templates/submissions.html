@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Submissions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2d2d2d; }
+
+        .header-banner {
+            background: #1a237e;
+            color: white;
+            padding: 16px 0;
+            margin-bottom: 28px;
+            border-bottom: 3px solid #e8e8e8;
+        }
+
+        .header-banner h4 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .btn-new {
+            background: white;
+            color: #1a237e;
+            border: none;
+            padding: 7px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 3px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn-new:hover {
+            background: #e8eaf6;
+            color: #1a237e;
+        }
+
+        .stats-bar {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            padding: 16px 24px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .stat-item h6 {
+            margin: 0;
+            color: #9e9e9e;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-item p {
+            margin: 3px 0 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a237e;
+        }
+
+        .stat-item p.name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d2d2d;
+        }
+
+        .table-wrapper {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .table {
+            margin: 0;
+            font-size: 13.5px;
+        }
+
+        .table thead th {
+            background: #f8f9fc;
+            border-bottom: 2px solid #e0e0e0;
+            border-top: none;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: #424242;
+            white-space: nowrap;
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .table tbody td {
+            padding: 11px 16px;
+            vertical-align: middle;
+            white-space: nowrap;
+            border-bottom: 1px solid #f0f0f0;
+            color: #2d2d2d;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fc;
+        }
+
+        .ref-num {
+            font-weight: 700;
+            color: #1a237e;
+            font-size: 13px;
+        }
+
+        .badge-account {
+            background: #e8eaf6;
+            color: #1a237e;
+            padding: 3px 10px;
+            border-radius: 2px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-edit {
+            background: #1a237e;
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 3px;
+            font-size: 12.5px;
+            font-weight: 500;
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn-edit:hover {
+            background: #151c6b;
+            color: white;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-banner">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h4>KYC Submissions</h4>
+            <a href="/kyc" class="btn-new">
+                <i class="fas fa-plus me-1"></i> New Application
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mb-3" style="border-radius:2px; font-size:14px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if accounts %}
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <h6>Total Submissions</h6>
+            <p>{{ accounts | length }}</p>
+        </div>
+        <div class="stat-item">
+            <h6>Latest Submission</h6>
+            <p class="name">{{ accounts[0].full_name }}</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Ref No.</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>PAN</th>
+                        <th>Account Type</th>
+                        <th>State</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in accounts %}
+                    <tr>
+                        <td class="ref-num">#KYC-{{ '%05d' % account.id }}</td>
+                        <td>{{ account.full_name }}</td>
+                        <td>{{ account.email }}</td>
+                        <td>{{ account.mobile }}</td>
+                        <td><code>{{ account.pan_number }}</code></td>
+                        <td><span class="badge-account">{{ account.account_type }}</span></td>
+                        <td>{{ account.state_name or 'N/A' }}</td>
+                        <td>
+                            {% if account.created_at %}
+                                {{ account.created_at.strftime('%d %b %Y') }}
+                            {% else %}N/A{% endif %}
+                        </td>
+                        <td>
+                            <a href="/update/{{ account.id }}" class="btn-edit">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="table-wrapper">
+        <div class="empty-state">
+            <i class="fas fa-inbox fa-2x text-muted mb-3 d-block"></i>
+            <p class="text-muted mb-3" style="font-size:14px;">No KYC submissions yet.</p>
+            <a href="/kyc" class="btn-edit px-4">
+                <i class="fas fa-plus me-1"></i> Submit First Application
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</body>
+</html>

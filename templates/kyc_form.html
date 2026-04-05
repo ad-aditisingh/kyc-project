@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Registration Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+body {
+            background: #f5f6fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #2d2d2d;
+        }
+
+        .header-banner {
+            background: #1a237e;
+            color: white;
+            padding: 16px 0;
+            margin-bottom: 28px;
+            border-bottom: 3px solid #e8e8e8;
+        }
+
+        .header-banner h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin: 0;
+        }
+
+        .header-banner p {
+            font-size: 13px;
+            opacity: 0.85;
+            margin: 3px 0 0;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 0;
+            overflow: hidden;
+        }
+        .form-wrapper {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8f9fc;
+            border-left: 4px solid #1a237e;
+            border-bottom: 1px solid #eeeeee;
+            border-top: 1px solid #e8e8e8;
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #1a237e;
+            letter-spacing: 0.2px;
+            margin-top: 20px;
+        }
+
+        .section-header i {
+            margin-right: 7px;
+            font-size: 13px;
+        }
+
+        .form-body {
+            padding: 20px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #424242;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .required-star {
+            color: #c62828;
+            margin-left: 2px;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            padding: 8px 12px;
+            font-size: 13.5px;
+            color: #2d2d2d;
+            background: #fff;
+            transition: border-color 0.2s;
+            box-shadow: none;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #1a237e;
+            box-shadow: 0 0 0 2px rgba(26,35,126,0.08);
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #bdbdbd;
+            font-size: 13px;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #c62828;
+        }
+
+        .invalid-feedback {
+            font-size: 12px;
+            color: #c62828;
+        }
+
+        .submit-btn {
+            background: #1a237e;
+            border: none;
+            padding: 11px 48px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 3px;
+            letter-spacing: 0.3px;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: #151c6b;
+        }
+
+        .upload-area {
+            border: 1.5px dashed #bdbdbd;
+            border-radius: 3px;
+            padding: 14px;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #1a237e;
+            background: #f0f2ff;
+        }
+
+        .upload-area i {
+            font-size: 22px;
+            color: #9e9e9e;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .upload-area:hover i {
+            color: #1a237e;
+        }
+
+        .upload-area p {
+            margin: 0;
+            font-size: 12.5px;
+            color: #9e9e9e;
+        }
+
+        .flash-message {
+            border-radius: 3px;
+            padding: 12px 18px;
+            font-size: 14px;
+        }
+
+        .form-check-input:checked {
+            background-color: #1a237e;
+            border-color: #1a237e;
+        }
+
+        .permanent-address-box {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .row.g-3 > .col-md-4,
+        .row.g-3 > .col-md-8,
+        .row.g-3 > .col-md-12 {
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header-banner">
+    <div class="container text-center">
+        <h2><i class="fas fa-university me-2"></i>ABC Fintech Solutions</h2>
+        <p class="mb-0 opacity-75">Extended KYC Registration Form</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} flash-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="form-wrapper">
+        <form id="kycForm" action="/submit_kyc" method="POST" enctype="multipart/form-data" novalidate>
+    
+
+
+        <!-- SECTION 1: Basic Account Information -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="fas fa-file-alt"></i> Section 1: Basic Account Information
+            </div>
+            <div class="form-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Account Type <span class="required-star">*</span></label>
+                        <select class="form-select" name="account_type" required>
+                            <option value="">-- Select Account Type --</option>
+                            <option>Savings Account</option>
+                            <option>Current Account</option>
+                            <option>Loan Account</option>
+                            <option>Fixed Deposit</option>
+                            <option>Recurring Deposit</option>
+                        </select>
+                        <div class="invalid-feedback">Please select account type.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Customer Type <span class="required-star">*</span></label>
+                        <select class="form-select" name="customer_type" required>
+                            <option value="">-- Select --</option>
+                            <option>Individual</option>
+                            <option>Non-Individual</option>
+                        </select>
+                        <div class="invalid-feedback">Please select customer type.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Preferred Branch <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="preferred_branch" placeholder="Enter branch name" required>
+                        <div class="invalid-feedback">Please enter preferred branch.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date of Application <span class="required-star">*</span></label>
+                        <input type="date" class="form-control" name="date_of_application" required>
+                        <div class="invalid-feedback">Please select date.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Contact & Verification -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="fas fa-envelope"></i> Section 2: Contact & Verification
+            </div>
+            <div class="form-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Email ID <span class="required-star">*</span></label>
+                        <input type="email" class="form-control" name="email" placeholder="example@email.com" required>
+                        <div class="invalid-feedback">Please enter a valid email.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Mobile Number <span class="required-star">*</span></label>
+                        <input type="tel" class="form-control" name="mobile" placeholder="10-digit mobile number" maxlength="10" pattern="[0-9]{10}" required>
+                        <div class="invalid-feedback">Please enter valid 10-digit mobile number.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Alternate Mobile Number</label>
+                        <input type="tel" class="form-control" name="alternate_mobile" placeholder="Optional" maxlength="10" pattern="[0-9]{10}">
+                        <div class="invalid-feedback">Please enter valid 10-digit number.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Aadhaar Details -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="fas fa-id-card"></i> Section 3: Aadhaar (UIDAI) Details
+            </div>
+            <div class="form-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Aadhaar Number <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="aadhaar_number" placeholder="12-digit Aadhaar number" maxlength="12" pattern="[0-9]{12}" required>
+                        <div class="invalid-feedback">Please enter valid 12-digit Aadhaar number.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Aadhaar Name <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="aadhaar_name" placeholder="Name as per Aadhaar" required>
+                        <div class="invalid-feedback">Please enter Aadhaar name.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date of Birth (as per Aadhaar) <span class="required-star">*</span></label>
+                        <input type="date" class="form-control" name="dob" required>
+                        <div class="invalid-feedback">Please select date of birth.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Gender <span class="required-star">*</span></label>
+                        <select class="form-select" name="gender" required>
+                            <option value="">-- Select --</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                        <div class="invalid-feedback">Please select gender.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: Personal Information -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="fas fa-user"></i> Section 4: Personal Information
+            </div>
+            <div class="form-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Full Legal Name <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="full_name" placeholder="Full name as per documents" required>
+                        <div class="invalid-feedback">Please enter full name.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Father's Name <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="father_name" placeholder="Father's full name" required>
+                        <div class="invalid-feedback">Please enter father's name.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Mother's Name <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="mother_name" placeholder="Mother's full name" required>
+                        <div class="invalid-feedback">Please enter mother's name.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Spouse / Guardian Name</label>
+                        <input type="text" class="form-control" name="spouse_name" placeholder="If applicable">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Marital Status <span class="required-star">*</span></label>
+                        <select class="form-select" name="marital_status" required>
+                            <option value="">-- Select --</option>
+                            <option>Single</option>
+                            <option>Married</option>
+                            <option>Widowed</option>
+                            <option>Divorced</option>
+                        </select>
+                        <div class="invalid-feedback">Please select marital status.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nationality <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="nationality" value="Indian" required>
+                        <div class="invalid-feedback">Please enter nationality.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Religion</label>
+                        <select class="form-select" name="religion">
+                            <option value="">-- Select --</option>
+                            <option>Hindu</option>
+                            <option>Muslim</option>
+                            <option>Christian</option>
+                            <option>Sikh</option>
+                            <option>Buddhist</option>
+                            <option>Jain</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Residential Status <span class="required-star">*</span></label>
+                        <select class="form-select" name="residential_status" required>
+                            <option value="">-- Select --</option>
+                            <option>Resident</option>
+                            <option>NRI</option>
+                            <option>OCI</option>
+                            <option>PIO</option>
+                        </select>
+                        <div class="invalid-feedback">Please select residential status.</div>
+                    </div>
+                    <div class="col-md-4">
+                         <label class="form-label">Country of Birth</label>
+                         <select class="form-select" name="country_of_birth" onchange="toggleBirthState(this.value)">
+                            <option value="">-- Select Country --</option>
+                            <option value="India" selected>India</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4" id="birth_state_box">
+                        <label class="form-label">State of Birth</label>
+                        <select class="form-select" name="birth_state" id="birth_state_id" onchange="loadBirthDistricts(this.value)">
+                            <option value="">-- Select State --</option>
+                            {% for state in states %}
+                                <option value="{{ state.id }}">{{ state.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4" id="birth_city_box">
+                        <label class="form-label">Place / City of Birth</label>
+                        <select class="form-select" name="place_of_birth" id="birth_city_id">
+                            <option value="">-- Select City --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4" id="birth_other_box" style="display:none">
+                        <label class="form-label">Place of Birth</label>
+                        <input type="text" class="form-control" name="place_of_birth_other" placeholder="Enter city of birth">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 5: Address Details -->
+        <div class="form-card">
+           <div class="section-header">
+               <i class="fas fa-map-marker-alt"></i> Section 5: Address Details
+           </div>
+           <div class="form-body">
+               <div class="row g-3">
+                   <div class="col-md-8">
+                       <label class="form-label">Street / House / Landmark <span class="required-star">*</span></label>
+                       <input type="text" class="form-control" name="street" placeholder="House no, Street, Landmark" required>
+                       <div class="invalid-feedback">Please enter street address.</div>
+                   </div>
+                   <div class="col-md-4">
+                       <label class="form-label">Area / Locality <span class="required-star">*</span></label>
+                       <input type="text" class="form-control" name="area" placeholder="Area or locality" required>
+                       <div class="invalid-feedback">Please enter area.</div>
+                   </div>
+                   <div class="col-md-4">
+                       <label class="form-label">State <span class="required-star">*</span></label>
+                       <select class="form-select" name="state_id" id="state_id" required>
+                           <option value="">-- Select State --</option>
+                           {% for state in states %}
+                               <option value="{{ state.id }}">{{ state.name }}</option>
+                           {% endfor %}
+                       </select>
+                       <div class="invalid-feedback">Please select state.</div>
+                   </div>
+                   <div class="col-md-4">
+                       <label class="form-label">District <span class="required-star">*</span></label>
+                       <select class="form-select" name="district_id" id="district_id" required>
+                           <option value="">-- Select District --</option>
+                       </select>
+                   <div class="invalid-feedback">Please select district.</div>
+               </div>
+               <div class="col-md-4">
+                   <label class="form-label">City <span class="required-star">*</span></label>
+                   <select class="form-select" name="city_id" id="city_id" required>
+                       <option value="">-- Select City --</option>
+                   </select>
+                   <div class="invalid-feedback">Please select city.</div>
+               </div>
+               <div class="col-md-4" id="city_manual_box" style="display:none">
+                   <label class="form-label">City (Manual Entry)</label>
+                   <input type="text" class="form-control" name="city_manual" placeholder="Type your city name">
+               </div>
+               <div class="col-md-4">
+                   <label class="form-label">Post Office <span class="required-star">*</span></label>
+                   <input type="text" class="form-control" name="post_office" placeholder="Post office name" required>
+                   <div class="invalid-feedback">Please enter post office.</div>
+               </div>
+               <div class="col-md-4">
+                   <label class="form-label">Pincode <span class="required-star">*</span></label>
+                   <input type="text" class="form-control" name="pincode" placeholder="6-digit pincode" maxlength="6" pattern="[0-9]{6}" required>
+                   <div class="invalid-feedback">Please enter valid 6-digit pincode.</div>
+               </div>
+               <div class="col-md-4">
+                   <label class="form-label">Address Type <span class="required-star">*</span></label>
+                   <select class="form-select" name="address_type" required>
+                       <option value="">-- Select --</option>
+                       <option>Residential</option>
+                       <option>Office</option>
+                       <option>Other</option>
+                   </select>
+                   <div class="invalid-feedback">Please select address type.</div>
+               </div>
+               <div class="col-md-12">
+                   <label class="form-label">Is Permanent Address Same as Current? <span class="required-star">*</span></label>
+                   <div class="d-flex gap-4 mt-1">
+                       <div class="form-check">
+                           <input class="form-check-input" type="radio" name="permanent_same_as_current" value="Yes" id="sameYes" checked>
+                           <label class="form-check-label" for="sameYes">Yes</label>
+                       </div>
+                       <div class="form-check">
+                           <input class="form-check-input" type="radio" name="permanent_same_as_current" value="No" id="sameNo">
+                           <label class="form-check-label" for="sameNo">No</label>
+                       </div>
+                   </div>
+               </div>
+               <div class="col-md-12 permanent-address-box" id="permanentAddressBox" style="display:none">
+                   <label class="form-label">Permanent Address</label>
+                   <textarea class="form-control" name="permanent_address" rows="3" placeholder="Enter permanent address"></textarea>
+               </div>
+           </div>
+       </div>
+   </div>
+
+        <!-- SECTION 6: Employment & Financials -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="fas fa-briefcase"></i> Section 6: Employment & Financials
+            </div>
+            <div class="form-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Occupation Type <span class="required-star">*</span></label>
+                        <select class="form-select" name="occupation_id" required>
+                            <option value="">-- Select Occupation --</option>
+                            {% for occ in occupations %}
+                                <option value="{{ occ.id }}">{{ occ.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Please select occupation.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Employer / Business Name</label>
+                        <input type="text" class="form-control" name="employer_name" placeholder="Company or business name">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nature of Business / Industry</label>
+                        <input type="text" class="form-control" name="nature_of_business" placeholder="e.g. IT, Banking, Retail">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Designation / Role</label>
+                        <input type="text" class="form-control" name="designation" placeholder="Your job title">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Annual Income Range <span class="required-star">*</span></label>
+                        <select class="form-select" name="annual_income" required>
+                            <option value="">-- Select Range --</option>
+                            <option>Below ₹1 Lakh</option>
+                            <option>₹1 - 5 Lakhs</option>
+                            <option>₹5 - 10 Lakhs</option>
+                            <option>₹10 - 25 Lakhs</option>
+                            <option>₹25 - 50 Lakhs</option>
+                            <option>Above ₹50 Lakhs</option>
+                        </select>
+                        <div class="invalid-feedback">Please select income range.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Source of Funds <span class="required-star">*</span></label>
+                        <select class="form-select" name="source_of_funds" required>
+                            <option value="">-- Select --</option>
+                            <option>Salary</option>
+                            <option>Business</option>
+                            <option>Investments</option>
+                            <option>Others</option>
+                        </select>
+                        <div class="invalid-feedback">Please select source of funds.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 7: Banking & ID Details -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="fas fa-credit-card"></i> Section 7: Banking & ID Details
+            </div>
+            <div class="form-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">PAN Number <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="pan_number" placeholder="e.g. ABCDE1234F" maxlength="10" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" style="text-transform:uppercase" required>
+                        <div class="invalid-feedback">Please enter valid PAN (e.g. ABCDE1234F).</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">PAN Holder Name <span class="required-star">*</span></label>
+                        <input type="text" class="form-control" name="pan_holder_name" placeholder="Name as per PAN card" required>
+                        <div class="invalid-feedback">Please enter PAN holder name.</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Driving Licence Number</label>
+                        <input type="text" class="form-control" name="driving_licence" placeholder="Optional">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 8: Document Uploads -->
+        <div class="form-card">
+            <div class="section-header">
+                <i class="fas fa-paperclip"></i> Section 8: Document Uploads
+            </div>
+            <div class="form-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Aadhaar Card Front <span class="required-star">*</span></label>
+                        <div class="upload-area" onclick="document.getElementById('aadhaar_front').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload (PDF/JPG)</p>
+                            <small id="aadhaar_front_name" class="text-primary"></small>
+                        </div>
+                        <input type="file" id="aadhaar_front" name="aadhaar_front" accept=".pdf,.jpg,.jpeg" class="d-none" onchange="showFileName(this, 'aadhaar_front_name')" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Aadhaar Card Back <span class="required-star">*</span></label>
+                        <div class="upload-area" onclick="document.getElementById('aadhaar_back').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload (PDF/JPG)</p>
+                            <small id="aadhaar_back_name" class="text-primary"></small>
+                        </div>
+                        <input type="file" id="aadhaar_back" name="aadhaar_back" accept=".pdf,.jpg,.jpeg" class="d-none" onchange="showFileName(this, 'aadhaar_back_name')" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">PAN Card <span class="required-star">*</span></label>
+                        <div class="upload-area" onclick="document.getElementById('pan_card').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload (PDF/JPG)</p>
+                            <small id="pan_card_name" class="text-primary"></small>
+                        </div>
+                        <input type="file" id="pan_card" name="pan_card" accept=".pdf,.jpg,.jpeg" class="d-none" onchange="showFileName(this, 'pan_card_name')" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Passport / Driving Licence</label>
+                        <div class="upload-area" onclick="document.getElementById('passport_dl').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload (PDF/JPG)</p>
+                            <small id="passport_dl_name" class="text-primary"></small>
+                        </div>
+                        <input type="file" id="passport_dl" name="passport_dl" accept=".pdf,.jpg,.jpeg" class="d-none" onchange="showFileName(this, 'passport_dl_name')">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Address Proof</label>
+                        <div class="upload-area" onclick="document.getElementById('address_proof').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload (PDF/JPG)</p>
+                            <small id="address_proof_name" class="text-primary"></small>
+                        </div>
+                        <input type="file" id="address_proof" name="address_proof" accept=".pdf,.jpg,.jpeg" class="d-none" onchange="showFileName(this, 'address_proof_name')">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Signature Scan <span class="required-star">*</span></label>
+                        <div class="upload-area" onclick="document.getElementById('signature').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Click to upload (PDF/JPG)</p>
+                            <small id="signature_name" class="text-primary"></small>
+                        </div>
+                        <input type="file" id="signature" name="signature" accept=".pdf,.jpg,.jpeg" class="d-none" onchange="showFileName(this, 'signature_name')" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary submit-btn">
+                <i class="fas fa-paper-plane me-2"></i>Submit KYC Application
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+    // Bootstrap validation
+    (function () {
+        'use strict';
+        var form = document.getElementById('kycForm');
+        form.addEventListener('submit', function (event) {
+            let valid = true;
+
+            // Check file sizes
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(function (input) {
+                if (input.files[0] && input.files[0].size > MAX_FILE_SIZE) {
+                    alert(`File "${input.files[0].name}" exceeds 2MB limit. Please upload a smaller file.`);
+                    valid = false;
+                }
+            });
+
+            // Check city selected
+            const citySelect = document.getElementById('city_id');
+            if (!citySelect.value) {
+                citySelect.classList.add('is-invalid');
+                valid = false;
+            } else {
+                citySelect.classList.remove('is-invalid');
+            }
+
+            if (!form.checkValidity() || !valid) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    })();
+
+    // Load districts when state changes
+    function loadDistricts(stateId) {
+        const districtSelect = document.getElementById('district_id');
+        const citySelect = document.getElementById('city_id');
+        districtSelect.innerHTML = '<option value="">-- Select District --</option>';
+        citySelect.innerHTML = '<option value="">-- Select City --</option>';
+        if (!stateId) return;
+
+        fetch('/get_districts/' + stateId)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.length === 0) {
+                    districtSelect.innerHTML += '<option disabled>No districts found</option>';
+                    return;
+                }
+                data.forEach(function(d) {
+                    var option = document.createElement('option');
+                    option.value = d.id;
+                    option.textContent = d.name;
+                    districtSelect.appendChild(option);
+                });
+            })
+            .catch(function(err) {
+                console.error('Error loading districts:', err);
+            });
+    }
+
+    // Load cities when district changes
+    function loadCities(districtId) {
+        const citySelect = document.getElementById('city_id');
+        citySelect.innerHTML = '<option value="">-- Select City --</option>';
+        if (!districtId) return;
+
+        fetch('/get_cities/' + districtId)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.length === 0) {
+                    citySelect.innerHTML += '<option disabled>No cities found — type below</option>';
+                    // Show manual input if no cities in database
+                    document.getElementById('city_manual_box').style.display = 'block';
+                    return;
+                }
+                document.getElementById('city_manual_box').style.display = 'none';
+                data.forEach(function(c) {
+                    var option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.name;
+                    citySelect.appendChild(option);
+                });
+            })
+            .catch(function(err) {
+                console.error('Error loading cities:', err);
+            });
+    }
+
+    // Show filename after upload
+    function showFileName(input, labelId) {
+        const label = document.getElementById(labelId);
+        if (input.files[0]) {
+            if (input.files[0].size > MAX_FILE_SIZE) {
+                label.textContent = '❌ File too large (max 2MB)';
+                label.style.color = 'red';
+                input.value = '';
+            } else {
+                label.textContent = '✅ ' + input.files[0].name;
+                label.style.color = 'green';
+            }
+        }
+    }
+
+    // Toggle permanent address
+    function togglePermanentAddress(value) {
+        const box = document.getElementById('permanentAddressBox');
+        box.style.display = value === 'No' ? 'block' : 'none';
+    }
+
+    // Toggle birth location fields
+    function toggleBirthState(value) {
+        const indiaBox = document.getElementById('birth_state_box');
+        const indiaCityBox = document.getElementById('birth_city_box');
+        const otherBox = document.getElementById('birth_other_box');
+        if (value === 'India') {
+            indiaBox.style.display = 'block';
+            indiaCityBox.style.display = 'block';
+            otherBox.style.display = 'none';
+        } else if (value === 'Other') {
+            indiaBox.style.display = 'none';
+            indiaCityBox.style.display = 'none';
+            otherBox.style.display = 'block';
+        }
+    }
+
+    // Load birth districts
+    function loadBirthDistricts(stateId) {
+        const birthCitySelect = document.getElementById('birth_city_id');
+        birthCitySelect.innerHTML = '<option value="">-- Select City --</option>';
+        if (!stateId) return;
+        fetch('/get_districts/' + stateId)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                data.forEach(function(d) {
+                    var option = document.createElement('option');
+                    option.value = d.name;
+                    option.textContent = d.name;
+                    birthCitySelect.appendChild(option);
+                });
+            });
+    }
+
+    // PAN uppercase
+    // PAN uppercase
+    document.querySelector('[name="pan_number"]').addEventListener('input', function () {
+        this.value = this.value.toUpperCase();
+    });
+
+    // Attach state → district listener
+    document.getElementById('state_id').addEventListener('change', function () {
+        loadDistricts(this.value);
+    });
+
+    // Attach district → city listener
+    document.getElementById('district_id').addEventListener('change', function () {
+        loadCities(this.value);
+    });
+
+    // Attach permanent address radio listener
+    document.querySelectorAll('[name="permanent_same_as_current"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            var box = document.getElementById('permanentAddressBox');
+            box.style.display = this.value === 'No' ? 'block' : 'none';
+        });
+    });
+</script>
+</body>
+</html>
