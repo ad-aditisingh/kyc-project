@@ -112,7 +112,7 @@ def submit_kyc():
             request.form.get('driving_licence_dob') or None,
             request.form.get('driving_licence_name'),
             request.form.get('location_village'),
-            request.form.get('country'),,
+            request.form.get('country'),
         )
 
         cursor.execute('''
