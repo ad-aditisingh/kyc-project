@@ -23,20 +23,35 @@ This application digitizes the Extended KYC registration process used in fintech
 
 ## Project Structure
 kyc_project/
+
 │
+
 ├── app.py              # Flask routes and backend logic
+
 ├── config.py           # Database configuration
+
 ├── database.py         # Table creation and seed data
+
 ├── requirements.txt    # Python dependencies
+
 ├── Procfile            # Render deployment config
+
 │
+
 ├── templates/
+
 │   ├── kyc_form.html       # Main KYC form
+
 │   ├── success.html        # Submission confirmation
+
 │   ├── submissions.html    # view of all records
+
 │   └── update_kyc.html     # Edit existing KYC
+
 │
+
 └── static/
+
 └── uploads/        # Uploaded documents
 ## Database Schema
 
