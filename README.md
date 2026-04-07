@@ -50,8 +50,8 @@ kyc_project/
 ## Form Sections
 
 1. Basic Account Information
-2. Contact & Verification (with OTP)
-3. Aadhaar Details (with OTP)
+2. Contact & Verification (with OTP 123456)
+3. Aadhaar Details (with OTP 123456)
 4. Personal Information
 5. Address Details (with location cascade)
 6. Employment & Financials
