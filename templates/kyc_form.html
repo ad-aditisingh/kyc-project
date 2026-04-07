@@ -252,69 +252,98 @@ body {
                 </div>
             </div>
         </div>
+        
 
         <!-- SECTION 2: Contact & Verification -->
-        <div class="form-card">
-            <div class="section-header">
-                <i class="fas fa-envelope"></i> Section 2: Contact & Verification
-            </div>
-            <div class="form-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Email ID <span class="required-star">*</span></label>
-                        <input type="email" class="form-control" name="email" placeholder="example@email.com" required>
-                        <div class="invalid-feedback">Please enter a valid email.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Mobile Number <span class="required-star">*</span></label>
-                        <input type="tel" class="form-control" name="mobile" placeholder="10-digit mobile number" maxlength="10" pattern="[0-9]{10}" required>
-                        <div class="invalid-feedback">Please enter valid 10-digit mobile number.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Alternate Mobile Number</label>
-                        <input type="tel" class="form-control" name="alternate_mobile" placeholder="Optional" maxlength="10" pattern="[0-9]{10}">
-                        <div class="invalid-feedback">Please enter valid 10-digit number.</div>
-                    </div>
+<div class="form-card">
+    <div class="section-header">
+        <i class="fas fa-envelope"></i> Section 2: Contact & Verification
+    </div>
+    <div class="form-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Email ID <span class="required-star">*</span></label>
+                <div class="input-group">
+                    <input type="email" class="form-control" name="email" id="email" placeholder="example@email.com" required>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="sendOTP('email')" style="border-color:#d0d0d0; font-size:12px; padding: 0 12px;">Send OTP</button>
                 </div>
+                <div class="invalid-feedback">Please enter a valid email.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Email OTP <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="email_otp" id="email_otp" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required>
+                <div class="invalid-feedback">Please enter valid OTP.</div>
+                <small id="email_otp_msg" class="text-success" style="display:none;">✓ OTP verified</small>
+                <small id="email_otp_err" class="text-danger" style="display:none;">✗ Incorrect OTP</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Mobile Number <span class="required-star">*</span></label>
+                <div class="input-group">
+                    <input type="tel" class="form-control" name="mobile" id="mobile" placeholder="10-digit mobile number" maxlength="10" pattern="[0-9]{10}" required>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="sendOTP('mobile')" style="border-color:#d0d0d0; font-size:12px; padding: 0 12px;">Send OTP</button>
+                </div>
+                <div class="invalid-feedback">Please enter valid 10-digit mobile number.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Mobile OTP <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="mobile_otp" id="mobile_otp" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required>
+                <div class="invalid-feedback">Please enter valid OTP.</div>
+                <small id="mobile_otp_msg" class="text-success" style="display:none;">✓ OTP verified</small>
+                <small id="mobile_otp_err" class="text-danger" style="display:none;">✗ Incorrect OTP</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Alternate Mobile Number</label>
+                <input type="tel" class="form-control" name="alternate_mobile" placeholder="Optional" maxlength="10" pattern="[0-9]{10}">
+                <div class="invalid-feedback">Please enter valid 10-digit number.</div>
             </div>
         </div>
-
-        <!-- SECTION 3: Aadhaar Details -->
-        <div class="form-card">
-            <div class="section-header">
-                <i class="fas fa-id-card"></i> Section 3: Aadhaar (UIDAI) Details
-            </div>
-            <div class="form-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Aadhaar Number <span class="required-star">*</span></label>
-                        <input type="text" class="form-control" name="aadhaar_number" placeholder="12-digit Aadhaar number" maxlength="12" pattern="[0-9]{12}" required>
-                        <div class="invalid-feedback">Please enter valid 12-digit Aadhaar number.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Aadhaar Name <span class="required-star">*</span></label>
-                        <input type="text" class="form-control" name="aadhaar_name" placeholder="Name as per Aadhaar" required>
-                        <div class="invalid-feedback">Please enter Aadhaar name.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Date of Birth (as per Aadhaar) <span class="required-star">*</span></label>
-                        <input type="date" class="form-control" name="dob" required>
-                        <div class="invalid-feedback">Please select date of birth.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Gender <span class="required-star">*</span></label>
-                        <select class="form-select" name="gender" required>
-                            <option value="">-- Select --</option>
-                            <option>Male</option>
-                            <option>Female</option>
-                            <option>Other</option>
-                        </select>
-                        <div class="invalid-feedback">Please select gender.</div>
-                    </div>
+    </div>
+</div>
+        <!-- SECTION 3: Aadhaar (UIDAI) Details -->
+<div class="form-card">
+    <div class="section-header">
+        <i class="fas fa-id-card"></i> Section 3: Aadhaar (UIDAI) Details
+    </div>
+    <div class="form-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Aadhaar Number <span class="required-star">*</span></label>
+                <div class="input-group">
+                    <input type="text" class="form-control" name="aadhaar_number" id="aadhaar_number" placeholder="12-digit Aadhaar number" maxlength="12" pattern="[0-9]{12}" required>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="sendOTP('aadhaar')" style="border-color:#d0d0d0; font-size:12px; padding: 0 12px;">Send OTP</button>
                 </div>
+                <div class="invalid-feedback">Please enter valid 12-digit Aadhaar number.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Aadhaar OTP <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="aadhaar_otp" id="aadhaar_otp" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required>
+                <div class="invalid-feedback">Please enter valid OTP.</div>
+                <small id="aadhaar_otp_msg" class="text-success" style="display:none;">✓ OTP verified</small>
+                <small id="aadhaar_otp_err" class="text-danger" style="display:none;">✗ Incorrect OTP</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Aadhaar Name <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="aadhaar_name" placeholder="Name as per Aadhaar" required>
+                <div class="invalid-feedback">Please enter Aadhaar name.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Date of Birth (as per Aadhaar) <span class="required-star">*</span></label>
+                <input type="date" class="form-control" name="dob" required>
+                <div class="invalid-feedback">Please select date of birth.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Gender <span class="required-star">*</span></label>
+                <select class="form-select" name="gender" required>
+                    <option value="">-- Select --</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                </select>
+                <div class="invalid-feedback">Please select gender.</div>
             </div>
         </div>
-
+    </div>
+</div>
         <!-- SECTION 4: Personal Information -->
         <div class="form-card">
             <div class="section-header">
@@ -428,6 +457,16 @@ body {
                        <label class="form-label">Area / Locality <span class="required-star">*</span></label>
                        <input type="text" class="form-control" name="area" placeholder="Area or locality" required>
                        <div class="invalid-feedback">Please enter area.</div>
+                   </div>
+                   <div class="col-md-4">
+                       <label class="form-label">Location / Village / Town <span class="required-star">*</span></label>
+                       <input type="text" class="form-control" name="location_village" placeholder="Village or town name" required>
+                       <div class="invalid-feedback">Please enter location.</div>
+                   </div>
+                   <div class="col-md-4">
+                       <label class="form-label">Country <span class="required-star">*</span></label>
+                       <input type="text" class="form-control" name="country" value="India" required>
+                       <div class="invalid-feedback">Please enter country.</div>
                    </div>
                    <div class="col-md-4">
                        <label class="form-label">State <span class="required-star">*</span></label>
@@ -555,30 +594,38 @@ body {
             </div>
         </div>
 
-        <!-- SECTION 7: Banking & ID Details -->
-        <div class="form-card">
-            <div class="section-header">
-                <i class="fas fa-credit-card"></i> Section 7: Banking & ID Details
+<!-- SECTION 7: Banking & ID Details -->
+<div class="form-card">
+    <div class="section-header">
+        <i class="fas fa-credit-card"></i> Section 7: Banking & ID Details
+    </div>
+    <div class="form-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">PAN Number <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="pan_number" placeholder="e.g. ABCDE1234F" maxlength="10" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" style="text-transform:uppercase" required>
+                <div class="invalid-feedback">Please enter valid PAN (e.g. ABCDE1234F).</div>
             </div>
-            <div class="form-body">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">PAN Number <span class="required-star">*</span></label>
-                        <input type="text" class="form-control" name="pan_number" placeholder="e.g. ABCDE1234F" maxlength="10" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" style="text-transform:uppercase" required>
-                        <div class="invalid-feedback">Please enter valid PAN (e.g. ABCDE1234F).</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">PAN Holder Name <span class="required-star">*</span></label>
-                        <input type="text" class="form-control" name="pan_holder_name" placeholder="Name as per PAN card" required>
-                        <div class="invalid-feedback">Please enter PAN holder name.</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Driving Licence Number</label>
-                        <input type="text" class="form-control" name="driving_licence" placeholder="Optional">
-                    </div>
-                </div>
+            <div class="col-md-4">
+                <label class="form-label">PAN Holder Name <span class="required-star">*</span></label>
+                <input type="text" class="form-control" name="pan_holder_name" placeholder="Name as per PAN card" required>
+                <div class="invalid-feedback">Please enter PAN holder name.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Driving Licence Number</label>
+                <input type="text" class="form-control" name="driving_licence" placeholder="Optional">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Driving Licence DOB</label>
+                <input type="date" class="form-control" name="driving_licence_dob">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Driving Licence Name</label>
+                <input type="text" class="form-control" name="driving_licence_name" placeholder="Name as per DL">
             </div>
         </div>
+    </div>
+</div>
 
         <!-- SECTION 8: Document Uploads -->
         <div class="form-card">
@@ -665,6 +712,20 @@ body {
         var form = document.getElementById('kycForm');
         form.addEventListener('submit', function (event) {
             let valid = true;
+
+            // Check OTPs verified
+            if (!otpVerified['email']) {
+                alert('Please verify your Email OTP before submitting.');
+                valid = false;
+            }
+            if (!otpVerified['mobile']) {
+                alert('Please verify your Mobile OTP before submitting.');
+                valid = false;
+            }
+            if (!otpVerified['aadhaar']) {
+                alert('Please verify your Aadhaar OTP before submitting.');
+                valid = false;
+            }
 
             // Check file sizes
             const fileInputs = document.querySelectorAll('input[type="file"]');
@@ -820,6 +881,59 @@ body {
                 });
             });
     }
+    // Mock OTP system
+    var otpSent = { email: false, mobile: false, aadhaar: false };
+    var otpVerified = { email: false, mobile: false, aadhaar: false };
+    var MOCK_OTP = '123456';
+
+    function sendOTP(type) {
+        var inputMap = { email: 'email', mobile: 'mobile', aadhaar: 'aadhaar_number' };
+        var input = document.getElementById(inputMap[type]);
+
+        if (!input.value.trim()) {
+            input.classList.add('is-invalid');
+            alert('Please enter ' + type + ' first before sending OTP.');
+            return;
+        }
+
+        otpSent[type] = true;
+        var msgEl = document.getElementById(type + '_otp_msg');
+        var errEl = document.getElementById(type + '_otp_err');
+        if (msgEl) { msgEl.style.display = 'none'; }
+        if (errEl) { errEl.style.display = 'none'; }
+
+        alert('OTP sent successfully! Use 123456 for testing.');
+    }
+
+    function verifyOTP(type) {
+        var otpInput = document.getElementById(type + '_otp');
+        var msgEl = document.getElementById(type + '_otp_msg');
+        var errEl = document.getElementById(type + '_otp_err');
+
+        if (!otpInput) return;
+
+        if (otpInput.value === MOCK_OTP) {
+            otpVerified[type] = true;
+            otpInput.classList.remove('is-invalid');
+            if (msgEl) { msgEl.style.display = 'block'; }
+            if (errEl) { errEl.style.display = 'none'; }
+        } else if (otpInput.value.length === 6) {
+            otpVerified[type] = false;
+            otpInput.classList.add('is-invalid');
+            if (msgEl) { msgEl.style.display = 'none'; }
+            if (errEl) { errEl.style.display = 'block'; }
+        }
+    }
+
+    // Auto verify OTP as user types
+    ['email', 'mobile', 'aadhaar'].forEach(function(type) {
+        var el = document.getElementById(type + '_otp');
+        if (el) {
+            el.addEventListener('input', function() {
+                verifyOTP(type);
+            });
+        }
+    });
 
     // PAN uppercase
     // PAN uppercase

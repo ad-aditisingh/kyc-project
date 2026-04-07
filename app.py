@@ -109,6 +109,10 @@ def submit_kyc():
             request.form.get('pan_number'),
             request.form.get('pan_holder_name'),
             request.form.get('driving_licence'),
+            request.form.get('driving_licence_dob') or None,
+            request.form.get('driving_licence_name'),
+            request.form.get('location_village'),
+            request.form.get('country'),,
         )
 
         cursor.execute('''
@@ -123,11 +127,12 @@ def submit_kyc():
                 city_id, district_id, state_id, occupation_id,
                 employer_name, nature_of_business, designation,
                 annual_income, source_of_funds, pan_number,
-                pan_holder_name, driving_licence
+                pan_holder_name, driving_licence, driving_licence_dob,
+                driving_licence_name, location_village, country
             ) VALUES (
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
             )
         ''', data)
 
