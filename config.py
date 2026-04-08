@@ -1,9 +1,3 @@
 import os
 
-DB_CONFIG = {
-    'host': os.environ.get('DB_HOST', 'sql12.freesqldatabase.com'),
-    'database': os.environ.get('DB_NAME', 'sql12821938'),
-    'user': os.environ.get('DB_USER', 'sql12821938'),
-    'password': os.environ.get('DB_PASS', 'CD29QJume5'),
-    'port': 3306
-}
+DATABASE_URL = os.getenv("postgresql://kyc_database_user:aiEcoZcqPwehsoisESvm5YGSP5re0HLD@dpg-d7b4mtpr0fns738b0qpg-a/kyc_database")

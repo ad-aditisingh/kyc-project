@@ -191,7 +191,7 @@ body {
 <div class="header-banner">
     <div class="container text-center">
         <h2><i class="fas fa-university me-2"></i>ABC Fintech Solutions</h2>
-        <p class="mb-0 opacity-75">Extended KYC Registration Form</p>
+        <p class="mb-0 opacity-75">KYC Registration Form</p>
     </div>
 </div>
 
@@ -273,8 +273,8 @@ body {
                 <label class="form-label">Email OTP <span class="required-star">*</span></label>
                 <input type="text" class="form-control" name="email_otp" id="email_otp" placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}" required>
                 <div class="invalid-feedback">Please enter valid OTP.</div>
-                <small id="email_otp_msg" class="text-success" style="display:none;">✓ OTP verified</small>
-                <small id="email_otp_err" class="text-danger" style="display:none;">✗ Incorrect OTP</small>
+                <small id="email_otp_msg" class="text-success" style="display:none;"> OTP verified</small>
+                <small id="email_otp_err" class="text-danger" style="display:none;"> Incorrect OTP</small>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Mobile Number <span class="required-star">*</span></label>
@@ -299,7 +299,7 @@ body {
         </div>
     </div>
 </div>
-        <!-- SECTION 3: Aadhaar (UIDAI) Details -->
+        <!-- SECTION 3: Aadhaar Details -->
 <div class="form-card">
     <div class="section-header">
         <i class="fas fa-id-card"></i> Section 3: Aadhaar (UIDAI) Details
@@ -713,7 +713,7 @@ body {
         form.addEventListener('submit', function (event) {
             let valid = true;
 
-            // Check OTPs verified
+            //  OTPs verified
             if (!otpVerified['email']) {
                 alert('Please verify your Email OTP before submitting.');
                 valid = false;
@@ -736,7 +736,7 @@ body {
                 }
             });
 
-           // Check city — either dropdown or manual
+           // Check city,  either dropdown or manual
            const citySelect = document.getElementById('city_id');
            const manualBox = document.getElementById('city_manual_box');
            const manualInput = document.querySelector('[name="city_manual"]');
@@ -805,13 +805,13 @@ body {
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data.length === 0) {
-                    // No cities — show manual input, remove required from dropdown
+                    // No cities, show manual input, remove required from dropdown
                     citySelect.innerHTML += '<option disabled>No cities available</option>';
                     citySelect.removeAttribute('required');
                     manualBox.style.display = 'block';
                     manualInput.setAttribute('required', 'required');
                 } else {
-                    // Cities found — hide manual, restore required on dropdown
+                    // Cities found, hide manual, restore required on dropdown
                     manualBox.style.display = 'none';
                     manualInput.removeAttribute('required');
                     citySelect.setAttribute('required', 'required');
@@ -936,17 +936,16 @@ body {
     });
 
     // PAN uppercase
-    // PAN uppercase
     document.querySelector('[name="pan_number"]').addEventListener('input', function () {
         this.value = this.value.toUpperCase();
     });
 
-    // Attach state → district listener
+    // Attach state-district listener
     document.getElementById('state_id').addEventListener('change', function () {
         loadDistricts(this.value);
     });
 
-    // Attach district → city listener
+    // Attach district-city listener
     document.getElementById('district_id').addEventListener('change', function () {
         loadCities(this.value);
     });

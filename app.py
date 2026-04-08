@@ -1,18 +1,21 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-import mysql.connector
-from config import DB_CONFIG
+#import mysql.connector
+import psycopg2
+#from config import DB_CONFIG
+from config import DATABASE_URL
+import psycopg2.extras
 import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = 'kyc_secret_key_2024'
+app.secret_key = os.getenv("SECRET_KEY")
 
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'pdf', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def get_connection():
-    return mysql.connector.connect(**DB_CONFIG)
+    return psycopg2.connect(DATABASE_URL, sslmode="require")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -26,7 +29,7 @@ def index():
 @app.route('/kyc', methods=['GET'])
 def kyc_form():
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     cursor.execute('SELECT id, name FROM states ORDER BY name')
     states = cursor.fetchall()
@@ -39,22 +42,22 @@ def kyc_form():
 
     return render_template('kyc_form.html', states=states, occupations=occupations)
 
-# Get districts by state (for dropdown)
+# Get districts by state, dropdown
 @app.route('/get_districts/<int:state_id>')
 def get_districts(state_id):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute('SELECT id, name FROM districts WHERE state_id = %s ORDER BY name', (state_id,))
     districts = cursor.fetchall()
     cursor.close()
     conn.close()
     return jsonify(districts)
 
-# Get cities by district (for dropdown)
+# Get cities by district for dropdown
 @app.route('/get_cities/<int:district_id>')
 def get_cities(district_id):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute('SELECT id, name FROM cities WHERE district_id = %s ORDER BY name', (district_id,))
     cities = cursor.fetchall()
     cursor.close()
@@ -133,10 +136,10 @@ def submit_kyc():
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
-            )
+            ) RETURNING id
         ''', data)
 
-        account_id = cursor.lastrowid
+        account_id = cursor.fetchone()[0]
 
         # Handle file uploads
         def save_file(field_name):
@@ -182,7 +185,7 @@ def success(account_id):
 @app.route('/submissions')
 def submissions():
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute('''
         SELECT a.id, a.full_name, a.email, a.mobile,
                a.pan_number, a.account_type, a.created_at,
@@ -200,7 +203,7 @@ def submissions():
 @app.route('/update/<int:account_id>', methods=['GET', 'POST'])
 def update_kyc(account_id):
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     if request.method == 'POST':
         data = (
