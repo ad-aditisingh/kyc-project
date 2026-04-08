@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 #import mysql.connector
-import psycopg2
+import psycopg
 #from config import DB_CONFIG
 from config import DATABASE_URL
-import psycopg2.extras
+import psycopg.rows
 import os
 from werkzeug.utils import secure_filename
 
@@ -15,7 +15,7 @@ ALLOWED_EXTENSIONS = {'pdf', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def get_connection():
-    return psycopg2.connect(DATABASE_URL, sslmode="require")
+    return psycopg.connect(DATABASE_URL)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -29,7 +29,7 @@ def index():
 @app.route('/kyc', methods=['GET'])
 def kyc_form():
     conn = get_connection()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor(row_factory=psycopg.rows.dict_row)
 
     cursor.execute('SELECT id, name FROM states ORDER BY name')
     states = cursor.fetchall()
