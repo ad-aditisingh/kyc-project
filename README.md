@@ -18,7 +18,7 @@ This application digitizes the Extended KYC registration process used in fintech
 ## Tech Stack
  Frontend - HTML, CSS, Bootstrap 5, JavaScript 
  Backend - Python, Flask 
- Database - MySQL 
+ Database - PostgreSQL 
  Hosting - Render 
 
 ## Project Structure
