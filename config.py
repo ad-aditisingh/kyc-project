@@ -1,3 +1,6 @@
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://kyc_database_user:aiEcoZcqPwehsoisESvm5YGSP5re0HLD@dpg-d7b4mtpr0fns738b0qpg-a/kyc_database")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://kyc_database_user:0y1ec6hDHNG6I4VWJzcht6H27igeKvrV@dpg-d80l8crrjlhs73ae04rg-a.virginia-postgres.render.com/kyc_database_ozpi"
+)
