@@ -29,12 +29,12 @@ def validate_form_data(form, files=None):
     errors = []
     today = date.today()
 
-    # ── EMAIL ──────────────────────────────────────────────────────────────
+    #  EMAIL
     email = form.get('email', '').strip()
     if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
         errors.append('Invalid email address.')
 
-    # ── MOBILE ─────────────────────────────────────────────────────────────
+    #  MOBILE 
     mobile = form.get('mobile', '').strip()
     if not re.fullmatch(r'\d{10}', mobile):
         errors.append('Mobile number must be exactly 10 digits.')
@@ -43,30 +43,28 @@ def validate_form_data(form, files=None):
     if alt_mobile and not re.fullmatch(r'\d{10}', alt_mobile):
         errors.append('Alternate mobile number must be exactly 10 digits.')
 
-    # ── AADHAAR ────────────────────────────────────────────────────────────
+    #  AADHAAR 
     aadhaar = form.get('aadhaar_number', '').strip()
     if not re.fullmatch(r'\d{12}', aadhaar):
         errors.append('Aadhaar number must be exactly 12 digits.')
 
-    # ── PAN ────────────────────────────────────────────────────────────────
-    pan = form.get('pan_number', '').strip().upper()
+    #  PAN 
     if not re.fullmatch(r'[A-Z]{5}[0-9]{4}[A-Z]{1}', pan):
         errors.append('Invalid PAN number. Expected format: ABCDE1234F')
 
-    # ── PINCODE ────────────────────────────────────────────────────────────
+    #  PINCODE 
     pincode = form.get('pincode', '').strip()
     if not re.fullmatch(r'\d{6}', pincode):
         errors.append('Pincode must be exactly 6 digits.')
 
-    # ── OTPs (4–6 numeric digits) ──────────────────────────────────────────
+    #  OTPs (4–6 numeric digits) 
     for field in ['email_otp', 'mobile_otp', 'aadhaar_otp']:
         otp = form.get(field, '').strip()
         if not re.fullmatch(r'\d{4,6}', otp):
             errors.append(f'OTP ({field}) must be 4–6 numeric digits.')
             break
 
-    # ── DATE VALIDATION ────────────────────────────────────────────────────
-    # Date of Application: required, valid date, must not be in the future
+    #  DATE VALIDATION 
     doa_val = form.get('date_of_application', '').strip()
     if not doa_val:
         errors.append('Date of Application is required.')
@@ -78,7 +76,7 @@ def validate_form_data(form, files=None):
         except ValueError:
             errors.append('Date of Application has an invalid date format.')
 
-    # Date of Birth: required, valid date, must not be future, must be realistic
+    # Date of Birth: 
     dob_val = form.get('dob', '').strip()
     if not dob_val:
         errors.append('Date of Birth is required.')
@@ -92,7 +90,7 @@ def validate_form_data(form, files=None):
         except ValueError:
             errors.append('Date of Birth has an invalid date format.')
 
-    # ── REQUIRED DROPDOWNS (reject blank / default "-- Select --") ─────────
+    #  REQUIRED DROPDOWNS  
     required_dropdowns = {
         'account_type':       'Account Type',
         'customer_type':      'Customer Type',
@@ -109,8 +107,8 @@ def validate_form_data(form, files=None):
         if not val or val.startswith('--') or val == '0':
             errors.append(f'{label} is required. Please select a valid option.')
 
-    # ── NAME FIELDS (letters, spaces, dots, apostrophes; min/max length) ───
-    # FIX: preferred_branch uses a permissive regex to allow alphanumeric branch names
+    #  NAME FIELDS  
+    
     name_fields = {
         'full_name':       ('Full Legal Name',   2, 100),
         'father_name':     ("Father's Name",     2, 100),
@@ -130,7 +128,6 @@ def validate_form_data(form, files=None):
         elif len(val) > max_len:
             errors.append(f'{label} must be at most {max_len} characters.')
 
-    # FIX: preferred_branch validated separately — allows alphanumeric + common chars
     branch = form.get('preferred_branch', '').strip()
     if not branch:
         errors.append('Preferred Branch is required.')
@@ -141,21 +138,17 @@ def validate_form_data(form, files=None):
     elif re.search(r'[@#$%^&*<>{}|\\]', branch):
         errors.append('Preferred Branch contains invalid special characters.')
 
-    # Optional name fields — validate format only if provided
-    # Optional fields validation
     optional_name_fields = {
         'spouse_name': 'Spouse/Guardian Name',
         'driving_licence_name': 'Driving Licence Name',
     }
 
-    # Strict validation for personal names
     for field, label in optional_name_fields.items():
         val = form.get(field, '').strip()
 
         if val and not re.fullmatch(r"[A-Za-z\s.'-]+", val):
             errors.append(f'{label} must contain letters and spaces only.')
 
-    # Employer name/business name validation
     employer_name = form.get('employer_name', '').strip()
 
     if employer_name:
@@ -165,7 +158,7 @@ def validate_form_data(form, files=None):
         elif re.search(r'[@#$%^*<>{}|\\]', employer_name):
             errors.append('Employer Name contains invalid special characters.')
 
-    # ── ADDRESS FIELDS (min/max length) ────────────────────────────────────
+    #  ADDRESS FIELDS (min/max length) 
     address_fields = {
         'street':           ('Street/House/Landmark', 5, 200),
         'area':             ('Area/Locality',          2, 100),
@@ -181,8 +174,7 @@ def validate_form_data(form, files=None):
         elif len(val) > max_len:
             errors.append(f'{label} must be at most {max_len} characters.')
 
-    # ── COUNTRY (required) ─────────────────────────────────────────────────
-    # ── COUNTRY (required) ─────────────────────────────────────────────────
+    #  COUNTRY (required) 
     country_val = form.get('country', '').strip()
 
     if not country_val:
@@ -194,7 +186,7 @@ def validate_form_data(form, files=None):
     elif len(country_val) < 2 or len(country_val) > 50:
         errors.append('Country must be between 2 and 50 characters.')
 
-    # ── MANDATORY FILE UPLOADS ─────────────────────────────────────────────
+    #  MANDATORY FILE UPLOADS 
     if files is not None:
         mandatory_files = {
             'aadhaar_front': 'Aadhaar Card Front',
@@ -212,7 +204,6 @@ def validate_form_data(form, files=None):
                 if ext not in allowed_exts:
                     errors.append(f'{label} must be a PDF or JPG/JPEG file.')
 
-        # Optional files — validate type only if provided
         for field in ['passport_dl', 'address_proof']:
             file = files.get(field)
             if file and file.filename:
@@ -223,8 +214,6 @@ def validate_form_data(form, files=None):
     return errors
 
 
-# init_db is NOT called here automatically.
-# Run `python database.py` once manually before first deployment.
 
 
 @app.route('/')
@@ -271,7 +260,6 @@ def get_cities(district_id):
 def submit_kyc():
     conn = None
     try:
-        # Run full validation including file uploads
         validation_errors = validate_form_data(request.form, files=request.files)
         if validation_errors:
             for error in validation_errors:
@@ -281,8 +269,7 @@ def submit_kyc():
         conn = get_connection()
         cursor = conn.cursor()
 
-        # ── FOREIGN KEY VALIDATION ─────────────────────────────────────────
-        # Validate state_id exists
+        #  FOREIGN KEY VALIDATION 
         state_id_val = request.form.get('state_id', '').strip()
         if not state_id_val:
             flash('State is required. Please select a state.', 'danger')
@@ -320,7 +307,6 @@ def submit_kyc():
             flash('Selected Occupation does not exist. Please select a valid occupation.', 'danger')
             return redirect(url_for('kyc_form'))
 
-        # ── 43 columns, 43 placeholders, 43 tuple items — verified ──────────
         data = (
             request.form.get('account_type'),
             request.form.get('customer_type'),
@@ -473,7 +459,6 @@ def update_kyc(account_id):
         if alt_mob and not re.fullmatch(r'\d{10}', alt_mob):
             update_errors.append('Alternate mobile must be exactly 10 digits.')
 
-        # FIX: Validate preferred_branch on update too
         branch_val = request.form.get('preferred_branch', '').strip()
         if not branch_val:
             update_errors.append('Preferred Branch is required.')
