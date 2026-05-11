@@ -4,6 +4,7 @@ import psycopg.rows
 from config import DATABASE_URL
 import os
 import re
+from datetime import datetime, date
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
@@ -17,7 +18,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 def get_connection():
-    # FIX 1: Added sslmode="require" for Render/Neon PostgreSQL compatibility
     return psycopg.connect(DATABASE_URL, sslmode="require")
 
 
@@ -25,13 +25,16 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def validate_form_data(form):
+def validate_form_data(form, files=None):
     errors = []
+    today = date.today()
 
+    # ── EMAIL ──────────────────────────────────────────────────────────────
     email = form.get('email', '').strip()
     if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
         errors.append('Invalid email address.')
 
+    # ── MOBILE ─────────────────────────────────────────────────────────────
     mobile = form.get('mobile', '').strip()
     if not re.fullmatch(r'\d{10}', mobile):
         errors.append('Mobile number must be exactly 10 digits.')
@@ -40,31 +43,188 @@ def validate_form_data(form):
     if alt_mobile and not re.fullmatch(r'\d{10}', alt_mobile):
         errors.append('Alternate mobile number must be exactly 10 digits.')
 
+    # ── AADHAAR ────────────────────────────────────────────────────────────
     aadhaar = form.get('aadhaar_number', '').strip()
     if not re.fullmatch(r'\d{12}', aadhaar):
         errors.append('Aadhaar number must be exactly 12 digits.')
 
+    # ── PAN ────────────────────────────────────────────────────────────────
     pan = form.get('pan_number', '').strip().upper()
     if not re.fullmatch(r'[A-Z]{5}[0-9]{4}[A-Z]{1}', pan):
         errors.append('Invalid PAN number. Expected format: ABCDE1234F')
 
+    # ── PINCODE ────────────────────────────────────────────────────────────
     pincode = form.get('pincode', '').strip()
     if not re.fullmatch(r'\d{6}', pincode):
         errors.append('Pincode must be exactly 6 digits.')
 
-    # FIX 4 verified: field names match kyc_form.html exactly
+    # ── OTPs (4–6 numeric digits) ──────────────────────────────────────────
     for field in ['email_otp', 'mobile_otp', 'aadhaar_otp']:
         otp = form.get(field, '').strip()
         if not re.fullmatch(r'\d{4,6}', otp):
-            errors.append('OTP must be 4-6 digits.')
+            errors.append(f'OTP ({field}) must be 4–6 numeric digits.')
             break
+
+    # ── DATE VALIDATION ────────────────────────────────────────────────────
+    # Date of Application: required, valid date, must not be in the future
+    doa_val = form.get('date_of_application', '').strip()
+    if not doa_val:
+        errors.append('Date of Application is required.')
+    else:
+        try:
+            doa_date = datetime.strptime(doa_val, '%Y-%m-%d').date()
+            if doa_date > today:
+                errors.append('Date of Application cannot be a future date.')
+        except ValueError:
+            errors.append('Date of Application has an invalid date format.')
+
+    # Date of Birth: required, valid date, must not be future, must be realistic
+    dob_val = form.get('dob', '').strip()
+    if not dob_val:
+        errors.append('Date of Birth is required.')
+    else:
+        try:
+            dob_date = datetime.strptime(dob_val, '%Y-%m-%d').date()
+            if dob_date > today:
+                errors.append('Date of Birth cannot be a future date.')
+            elif dob_date.year < 1900:
+                errors.append('Date of Birth seems invalid (before 1900).')
+        except ValueError:
+            errors.append('Date of Birth has an invalid date format.')
+
+    # ── REQUIRED DROPDOWNS (reject blank / default "-- Select --") ─────────
+    required_dropdowns = {
+        'account_type':       'Account Type',
+        'customer_type':      'Customer Type',
+        'gender':             'Gender',
+        'marital_status':     'Marital Status',
+        'residential_status': 'Residential Status',
+        'address_type':       'Address Type',
+        'occupation_id':      'Occupation Type',
+        'annual_income':      'Annual Income Range',
+        'source_of_funds':    'Source of Funds',
+    }
+    for field, label in required_dropdowns.items():
+        val = form.get(field, '').strip()
+        if not val or val.startswith('--') or val == '0':
+            errors.append(f'{label} is required. Please select a valid option.')
+
+    # ── NAME FIELDS (letters, spaces, dots, apostrophes; min/max length) ───
+    # FIX: preferred_branch uses a permissive regex to allow alphanumeric branch names
+    name_fields = {
+        'full_name':       ('Full Legal Name',   2, 100),
+        'father_name':     ("Father's Name",     2, 100),
+        'mother_name':     ("Mother's Name",     2, 100),
+        'aadhaar_name':    ('Aadhaar Name',      2, 100),
+        'pan_holder_name': ('PAN Holder Name',   2, 100),
+        'nationality':     ('Nationality',        2,  50),
+    }
+    for field, (label, min_len, max_len) in name_fields.items():
+        val = form.get(field, '').strip()
+        if not val:
+            errors.append(f'{label} is required.')
+        elif not re.fullmatch(r"[A-Za-z\s.'-]+", val):
+            errors.append(f'{label} must contain letters and spaces only (no numbers or special characters).')
+        elif len(val) < min_len:
+            errors.append(f'{label} must be at least {min_len} characters.')
+        elif len(val) > max_len:
+            errors.append(f'{label} must be at most {max_len} characters.')
+
+    # FIX: preferred_branch validated separately — allows alphanumeric + common chars
+    branch = form.get('preferred_branch', '').strip()
+    if not branch:
+        errors.append('Preferred Branch is required.')
+    elif len(branch) < 2:
+        errors.append('Preferred Branch must be at least 2 characters.')
+    elif len(branch) > 100:
+        errors.append('Preferred Branch must be at most 100 characters.')
+    elif re.search(r'[@#$%^&*<>{}|\\]', branch):
+        errors.append('Preferred Branch contains invalid special characters.')
+
+    # Optional name fields — validate format only if provided
+    # Optional fields validation
+    optional_name_fields = {
+        'spouse_name': 'Spouse/Guardian Name',
+        'driving_licence_name': 'Driving Licence Name',
+    }
+
+    # Strict validation for personal names
+    for field, label in optional_name_fields.items():
+        val = form.get(field, '').strip()
+
+        if val and not re.fullmatch(r"[A-Za-z\s.'-]+", val):
+            errors.append(f'{label} must contain letters and spaces only.')
+
+    # Employer name/business name validation
+    employer_name = form.get('employer_name', '').strip()
+
+    if employer_name:
+        if len(employer_name) < 2 or len(employer_name) > 100:
+            errors.append('Employer Name must be between 2 and 100 characters.')
+
+        elif re.search(r'[@#$%^*<>{}|\\]', employer_name):
+            errors.append('Employer Name contains invalid special characters.')
+
+    # ── ADDRESS FIELDS (min/max length) ────────────────────────────────────
+    address_fields = {
+        'street':           ('Street/House/Landmark', 5, 200),
+        'area':             ('Area/Locality',          2, 100),
+        'location_village': ('Location/Village/Town',  2, 100),
+        'post_office':      ('Post Office',            2, 100),
+    }
+    for field, (label, min_len, max_len) in address_fields.items():
+        val = form.get(field, '').strip()
+        if not val:
+            errors.append(f'{label} is required.')
+        elif len(val) < min_len:
+            errors.append(f'{label} must be at least {min_len} characters.')
+        elif len(val) > max_len:
+            errors.append(f'{label} must be at most {max_len} characters.')
+
+    # ── COUNTRY (required) ─────────────────────────────────────────────────
+    # ── COUNTRY (required) ─────────────────────────────────────────────────
+    country_val = form.get('country', '').strip()
+
+    if not country_val:
+        errors.append('Country is required.')
+
+    elif not re.fullmatch(r"[A-Za-z\s.'-]+", country_val):
+        errors.append('Country must contain letters and spaces only.')
+
+    elif len(country_val) < 2 or len(country_val) > 50:
+        errors.append('Country must be between 2 and 50 characters.')
+
+    # ── MANDATORY FILE UPLOADS ─────────────────────────────────────────────
+    if files is not None:
+        mandatory_files = {
+            'aadhaar_front': 'Aadhaar Card Front',
+            'aadhaar_back':  'Aadhaar Card Back',
+            'pan_card':      'PAN Card',
+            'signature':     'Signature Scan',
+        }
+        allowed_exts = {'pdf', 'jpg', 'jpeg'}
+        for field, label in mandatory_files.items():
+            file = files.get(field)
+            if not file or not file.filename:
+                errors.append(f'{label} upload is required.')
+            else:
+                ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+                if ext not in allowed_exts:
+                    errors.append(f'{label} must be a PDF or JPG/JPEG file.')
+
+        # Optional files — validate type only if provided
+        for field in ['passport_dl', 'address_proof']:
+            file = files.get(field)
+            if file and file.filename:
+                ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+                if ext not in allowed_exts:
+                    errors.append(f'{field.replace("_", " ").title()} must be a PDF or JPG/JPEG file.')
 
     return errors
 
 
-# FIX 2: Removed automatic init_db() execution block entirely.
-# Run `python database.py` manually once before first deployment.
-# Auto-running on every startup causes slow startups and Render health check failures.
+# init_db is NOT called here automatically.
+# Run `python database.py` once manually before first deployment.
 
 
 @app.route('/')
@@ -109,8 +269,10 @@ def get_cities(district_id):
 
 @app.route('/submit_kyc', methods=['POST'])
 def submit_kyc():
+    conn = None
     try:
-        validation_errors = validate_form_data(request.form)
+        # Run full validation including file uploads
+        validation_errors = validate_form_data(request.form, files=request.files)
         if validation_errors:
             for error in validation_errors:
                 flash(error, 'danger')
@@ -119,7 +281,46 @@ def submit_kyc():
         conn = get_connection()
         cursor = conn.cursor()
 
-        # FIX 3 verified: 43 columns, 43 placeholders, 43 tuple items — all match
+        # ── FOREIGN KEY VALIDATION ─────────────────────────────────────────
+        # Validate state_id exists
+        state_id_val = request.form.get('state_id', '').strip()
+        if not state_id_val:
+            flash('State is required. Please select a state.', 'danger')
+            return redirect(url_for('kyc_form'))
+        cursor.execute('SELECT id FROM states WHERE id = %s', (int(state_id_val),))
+        if not cursor.fetchone():
+            flash('Selected State does not exist. Please select a valid state.', 'danger')
+            return redirect(url_for('kyc_form'))
+
+        # Validate district_id exists
+        district_id_val = request.form.get('district_id', '').strip()
+        if not district_id_val:
+            flash('District is required. Please select a district.', 'danger')
+            return redirect(url_for('kyc_form'))
+        cursor.execute('SELECT id FROM districts WHERE id = %s', (int(district_id_val),))
+        if not cursor.fetchone():
+            flash('Selected District does not exist. Please select a valid district.', 'danger')
+            return redirect(url_for('kyc_form'))
+
+        # Validate city_id exists (optional — may be None if district has no cities)
+        city_id_val = request.form.get('city_id', '').strip()
+        if city_id_val:
+            cursor.execute('SELECT id FROM cities WHERE id = %s', (int(city_id_val),))
+            if not cursor.fetchone():
+                flash('Selected City does not exist. Please select a valid city.', 'danger')
+                return redirect(url_for('kyc_form'))
+
+        # Validate occupation_id exists
+        occupation_id_val = request.form.get('occupation_id', '').strip()
+        if not occupation_id_val:
+            flash('Occupation Type is required.', 'danger')
+            return redirect(url_for('kyc_form'))
+        cursor.execute('SELECT id FROM occupations WHERE id = %s', (int(occupation_id_val),))
+        if not cursor.fetchone():
+            flash('Selected Occupation does not exist. Please select a valid occupation.', 'danger')
+            return redirect(url_for('kyc_form'))
+
+        # ── 43 columns, 43 placeholders, 43 tuple items — verified ──────────
         data = (
             request.form.get('account_type'),
             request.form.get('customer_type'),
@@ -148,16 +349,16 @@ def submit_kyc():
             request.form.get('address_type'),
             request.form.get('permanent_same_as_current'),
             request.form.get('permanent_address') or None,
-            int(request.form.get('city_id')) if request.form.get('city_id') else None,
-            int(request.form.get('district_id')) if request.form.get('district_id') else None,
-            int(request.form.get('state_id')) if request.form.get('state_id') else None,
-            int(request.form.get('occupation_id')) if request.form.get('occupation_id') else None,
+            int(city_id_val) if city_id_val else None,
+            int(district_id_val),
+            int(state_id_val),
+            int(occupation_id_val),
             request.form.get('employer_name') or None,
             request.form.get('nature_of_business') or None,
             request.form.get('designation') or None,
             request.form.get('annual_income'),
             request.form.get('source_of_funds'),
-            request.form.get('pan_number'),
+            request.form.get('pan_number', '').strip().upper(),
             request.form.get('pan_holder_name'),
             request.form.get('driving_licence') or None,
             request.form.get('driving_licence_dob') or None,
@@ -181,9 +382,9 @@ def submit_kyc():
                 pan_holder_name, driving_licence, driving_licence_dob,
                 driving_licence_name, location_village, country
             ) VALUES (
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) RETURNING id
         ''', data)
 
@@ -220,7 +421,9 @@ def submit_kyc():
         return redirect(url_for('success', account_id=account_id))
 
     except Exception as e:
-        flash(f'Error: {str(e)}', 'danger')
+        if conn is not None:
+            conn.rollback()
+        flash(f'An error occurred while submitting the form. Please try again. ({str(e)})', 'danger')
         return redirect(url_for('kyc_form'))
 
 
@@ -253,25 +456,85 @@ def update_kyc(account_id):
     cursor = conn.cursor(row_factory=psycopg.rows.dict_row)
 
     if request.method == 'POST':
+        update_errors = []
+
+        # Validate email
+        email_val = request.form.get('email', '').strip()
+        if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email_val):
+            update_errors.append('Invalid email address.')
+
+        # Validate mobile
+        mobile_val = request.form.get('mobile', '').strip()
+        if not re.fullmatch(r'\d{10}', mobile_val):
+            update_errors.append('Mobile number must be exactly 10 digits.')
+
+        # Validate alternate mobile (optional)
+        alt_mob = request.form.get('alternate_mobile', '').strip()
+        if alt_mob and not re.fullmatch(r'\d{10}', alt_mob):
+            update_errors.append('Alternate mobile must be exactly 10 digits.')
+
+        # FIX: Validate preferred_branch on update too
+        branch_val = request.form.get('preferred_branch', '').strip()
+        if not branch_val:
+            update_errors.append('Preferred Branch is required.')
+        elif len(branch_val) < 2 or len(branch_val) > 100:
+            update_errors.append('Preferred Branch must be between 2 and 100 characters.')
+        elif re.search(r'[@#$%^&*<>{}|\\]', branch_val):
+            update_errors.append('Preferred Branch contains invalid special characters.')
+
+        # Validate employer_name (optional)
+        employer_val = request.form.get('employer_name', '').strip()
+        if employer_val and re.search(r'[@#$%^*<>{}|\\]', employer_val):
+            update_errors.append('Employer Name contains invalid special characters.')
+
+        # Validate required dropdowns
+        account_type_val = request.form.get('account_type', '').strip()
+        if not account_type_val or account_type_val.startswith('--'):
+            update_errors.append('Account Type is required.')
+
+        customer_type_val = request.form.get('customer_type', '').strip()
+        if not customer_type_val or customer_type_val.startswith('--'):
+            update_errors.append('Customer Type is required.')
+
+        annual_income_val = request.form.get('annual_income', '').strip()
+        if not annual_income_val or annual_income_val.startswith('--'):
+            update_errors.append('Annual Income Range is required.')
+
+        source_of_funds_val = request.form.get('source_of_funds', '').strip()
+        if not source_of_funds_val or source_of_funds_val.startswith('--'):
+            update_errors.append('Source of Funds is required.')
+
+        if update_errors:
+            for err in update_errors:
+                flash(err, 'danger')
+            cursor.close()
+            conn.close()
+            return redirect(url_for('update_kyc', account_id=account_id))
+
         data = (
-            request.form.get('account_type'),
-            request.form.get('customer_type'),
-            request.form.get('preferred_branch'),
-            request.form.get('email'),
-            request.form.get('mobile'),
-            request.form.get('alternate_mobile') or None,
-            request.form.get('employer_name') or None,
-            request.form.get('annual_income'),
-            request.form.get('source_of_funds'),
+            account_type_val,
+            customer_type_val,
+            branch_val,
+            email_val,
+            mobile_val,
+            alt_mob or None,
+            employer_val or None,
+            annual_income_val,
+            source_of_funds_val,
             account_id
         )
         cursor.execute('''
             UPDATE accounts SET
-                account_type=%s, customer_type=%s,
-                preferred_branch=%s, email=%s, mobile=%s,
-                alternate_mobile=%s, employer_name=%s,
-                annual_income=%s, source_of_funds=%s
-            WHERE id=%s
+                account_type = %s,
+                customer_type = %s,
+                preferred_branch = %s,
+                email = %s,
+                mobile = %s,
+                alternate_mobile = %s,
+                employer_name = %s,
+                annual_income = %s,
+                source_of_funds = %s
+            WHERE id = %s
         ''', data)
         conn.commit()
         cursor.close()
@@ -281,6 +544,12 @@ def update_kyc(account_id):
 
     cursor.execute('SELECT * FROM accounts WHERE id = %s', (account_id,))
     account = cursor.fetchone()
+    if not account:
+        cursor.close()
+        conn.close()
+        flash('Account not found.', 'danger')
+        return redirect(url_for('submissions'))
+
     cursor.execute('SELECT id, name FROM states ORDER BY name')
     states = cursor.fetchall()
     cursor.execute('SELECT id, name FROM occupations ORDER BY name')
